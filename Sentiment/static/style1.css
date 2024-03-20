@@ -486,6 +486,16 @@ textarea{
 
 }
 
+.green {
+  color: green;
+}
+.red {
+  color: red;
+}
+.yellow {
+  color: rgb(219, 12, 255);
+}
+
 .resultrow span {
   padding: 0.5rem;
 

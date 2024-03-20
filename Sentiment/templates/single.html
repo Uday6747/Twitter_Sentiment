@@ -69,7 +69,7 @@
             <span>Confidence</span>
         </div>
         <div class="resultrow">
-            <span>{{pred}}</span>
+            <span class="{% if pred == 'Positive' %} green {% elif pred == 'Negative' %} red {% elif pred == 'Neutral' %} yellow {% endif %}">{{pred}}</span>
             <span>{{'%.2f'|format(conf)}}</span>
         </div>
     </div>

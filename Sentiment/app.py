@@ -42,9 +42,9 @@ from sklearn.metrics import f1_score
 import time
 
 
-
 app= Flask(__name__)
 
+global file_name
 # Importing the dataset :
 DATASET_COLUMNS=['target','text']
 DATASET_ENCODING = "ISO-8859-1"
@@ -165,22 +165,6 @@ X_train_transformed = vectorizer.fit_transform(X_train)
 X_test = vectorizer.transform(X_test)
 
 
-model = RandomForestClassifier()
-model.fit(X_train_transformed, y_train)
-
-y_pred = model.predict(X_test)
-average = 'micro'
-print("Training Accuracy :", model.score(X_train_transformed, y_train))
-print("Validation Accuracy :", model.score(X_test, y_test))
-
-# calculating the f1 score for the validation set
-print("F1 score :", f1_score(y_test, y_pred, average=average))
-
-# confusion matrix
-cm = confusion_matrix(y_test, y_pred)
-print(cm)
-
-
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -224,10 +208,7 @@ def single():
         # Take the absolute value of the polarity score
         polarity = abs(polarity)
         conf = polarity * 100
-        if conf == 5.551115123125783e-15:
-            predi == 'Neutral'
-            print(predi)
-
+            
         print("Polarity:", polarity * 100)
         print("Subjectivity:", subjectivity * 100)
         return render_template('single.html', pred=predi, conf=conf)
@@ -249,10 +230,11 @@ def upload_file():
     if file.filename == '':
 
         return 'No selected file'
-    
+    print(file.filename)
+    global file_name
+    file_name = file.filename
     # Save the uploaded file to a specific location
-    file.save('upload/' + file.filename)
-
+    file.save(file.filename)
     # Process the file (e.g., read it, analyze it, etc.)
     # Here you can add your file processing logic
     
@@ -262,7 +244,7 @@ def upload_file():
 def file_result():
     DATASET_COLUMNS_test=['text']
     DATASET_ENCODING = "ISO-8859-1"
-    df_test = pd.read_csv('test.csv',
+    df_test = pd.read_csv(file_name,
                     encoding=DATASET_ENCODING)
     df_test.columns = DATASET_COLUMNS_test
     # Display of the first 5 lines :
