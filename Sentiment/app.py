@@ -1,50 +1,28 @@
-from flask import Flask, render_template
 from flask import Flask, render_template, request
-
-# utilities :
-import re # regular expression library
-import numpy as np
-import pandas as pd
-
-# plotting :
-import seaborn as sns
-from wordcloud import WordCloud
-import matplotlib.pyplot as plt
-
-import pandas as pd
-import numpy as np
-import string
 import re
+import numpy as np
+import pandas as pd
+import string
 import nltk
 from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
 from sklearn.feature_extraction.text import TfidfVectorizer
-
-# nltk :
-import nltk
 from nltk.stem import WordNetLemmatizer
-from nltk.tokenize import word_tokenize
-
-
-# sklearn :
-from sklearn.svm import LinearSVC
-from sklearn.naive_bayes import BernoulliNB
+from sklearn.naive_bayes import GaussianNB
+from sklearn.metrics import confusion_matrix, accuracy_score
+from xgboost import XGBClassifier
+from sklearn.metrics import roc_auc_score
 from sklearn.linear_model import LogisticRegression
-from sklearn.model_selection import train_test_split
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics import confusion_matrix, classification_report
-
+from sklearn.svm import SVC
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import confusion_matrix
-from sklearn.metrics import f1_score
-
-# time library :
-import time
-
+from sklearn.model_selection import train_test_split
+import pickle
 
 app= Flask(__name__)
 
 global file_name
+accuracies = []
+accur = {}
 # Importing the dataset :
 DATASET_COLUMNS=['target','text']
 DATASET_ENCODING = "ISO-8859-1"
@@ -161,10 +139,56 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
 # Vectorizing text data
 vectorizer = TfidfVectorizer()
 X_train_transformed = vectorizer.fit_transform(X_train)
+X_test_transformed = vectorizer.transform(X_test)
 
-X_test = vectorizer.transform(X_test)
+models = {
+    'Logistic Regression': LogisticRegression(),
+    'XGBoost': XGBClassifier(),
+    'SVM': SVC(),
+    'Random Forest': RandomForestClassifier(),
+    'Naive Bayes': GaussianNB()
+}
 
+for name, model in models.items():
+    if name == 'Naive Bayes':
+        # Convert sparse matrices to dense arrays
+        model.fit(X_train_transformed.toarray(), y_train)
+        train_preds = model.predict(X_train_transformed.toarray())
+        test_preds = model.predict(X_test_transformed.toarray())
+    else:
+        model.fit(X_train_transformed, y_train)
+        train_preds = model.predict(X_train_transformed)
+        test_preds = model.predict(X_test_transformed)
 
+    train_conf_matrix = confusion_matrix(y_train, train_preds)
+    test_conf_matrix = confusion_matrix(y_test, test_preds)
+
+    train_accuracy = accuracy_score(y_train, train_preds)
+    test_accuracy = accuracy_score(y_test, test_preds)
+    accuracies.append((name, train_accuracy, test_accuracy))
+    accur[name] = (train_accuracy, test_accuracy)
+
+    print(f"Model: {name}")
+    print(f"Train Accuracy: {train_accuracy}")
+    print(f"Test Accuracy: {test_accuracy}")
+    print("Confusion Matrix (Train):")
+    print(train_conf_matrix)
+    print("Confusion Matrix (Test):")
+    print(test_conf_matrix)
+    print()
+
+print("Accuracies : ",accuracies)
+print("Accur :",accur)
+# Find the model with the highest test accuracy
+best_model_name = max(accur, key=lambda k: accur[k][0])
+best_model_train_accuracy = accur[best_model_name][0]
+best_model_test_accuracy = accur[best_model_name][1]
+print("BMN",best_model_name)
+print(best_model_train_accuracy)
+print(best_model_test_accuracy)
+best_model = models[best_model_name]
+filename = 'best_train_model.pkl'
+pickle.dump(best_model, open(filename, 'wb'))
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -172,17 +196,12 @@ def index():
 @app.route('/single', methods=['GET', 'POST'])
 def single():
     if request.method == 'POST':
-        clf = LogisticRegression(C=2.1, solver='liblinear', multi_class='auto')
-        clf.fit(X_train_transformed, y_train)
-        y_pred = clf.predict(X_test)
-        # Import scikit-learn metrics module for accuracy calculation
-        from sklearn import metrics
-        # Module Accuracy: How often is the classifier correct?
-        cl_acc = metrics.accuracy_score(y_test, y_pred)
+        filename = 'best_train_model.pkl'
+        model = pickle.load(open(filename, 'rb'))
         st1 = request.form['single_comm']
         st = preprocessing(st1)
         st = vectorizer.transform([st])
-        pred = clf.predict(st)
+        pred = model.predict(st)
         print(pred)
 
         if pred==0:
@@ -211,14 +230,14 @@ def single():
             
         print("Polarity:", polarity * 100)
         print("Subjectivity:", subjectivity * 100)
-        return render_template('single.html', pred=predi, conf=conf)
+        return render_template('single.html', pred=predi, conf=conf, acc=best_model_train_accuracy*100, bmn=best_model_name)
     else:
         # Handle other HTTP methods
-        return render_template('single.html', predi=None, conf=0)
+        return render_template('single.html', predi=None, conf=0, acc=best_model_train_accuracy*100, bmn=best_model_name)
 
 @app.route('/file')
 def file():
-    return render_template('file.html')
+    return render_template('file.html', acc=best_model_train_accuracy*100, bmn=best_model_name)
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
@@ -242,12 +261,15 @@ def upload_file():
 
 @app.route('/file_result')
 def file_result():
+    filename = 'best_train_model.pkl'
+    model = pickle.load(open(filename, 'rb'))
     DATASET_COLUMNS_test=['text']
     DATASET_ENCODING = "ISO-8859-1"
     df_test = pd.read_csv(file_name,
                     encoding=DATASET_ENCODING)
     df_test.columns = DATASET_COLUMNS_test
     # Display of the first 5 lines :
+    total_comment_len = len(df_test)
     print(df_test.sample(5))
     print(df_test.info())
     dataset_test = df_test[['text']]
@@ -258,7 +280,31 @@ def file_result():
     print(dataset_test.columns)
     dataset = dataset_test.processed_text
     dataset = vectorizer.transform(dataset)
-    return render_template('result.html')
+    pred = model.predict(dataset)
+    df_test['target'] = pred
+    print(df_test)
+    # Assuming df_test is your DataFrame with 'text' and 'target' columns
+    positive_comments = df_test[df_test['target'] == 2]['text']
+    negative_comments = df_test[df_test['target'] == 0]['text']
+    neutral_comments = df_test[df_test['target'] == 1]['text']
+    # Print the full text of positive comments
+
+
+    positive_len = len(positive_comments)
+    negative_len = len(negative_comments)
+    neutral_len = len(neutral_comments)
+
+    print("Postive Comment Number: ",positive_len)
+    print("Negative Comment Number: ",negative_len)
+    print("Neutral Comment Number: ",neutral_len)
+
+    positive_per = (positive_len/total_comment_len)*100
+    negative_per = (negative_len/total_comment_len)*100
+    neutral_per = (neutral_len/total_comment_len)*100
+    print("Positive Comments Percentage : ",positive_per)
+    print("Negative Comments Percentage : ",negative_per)
+    print("Neutral Comments Percentage : ",neutral_per)
+    return render_template('result.html', positive_comments=positive_comments, negative_comments=negative_comments, neutral_comments=neutral_comments, acc=best_model_train_accuracy*100, bmn=best_model_name)
 
 '''
 @app.route('')
