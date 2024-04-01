@@ -372,11 +372,29 @@ body {
         padding-left: 45px;
         padding-right: 50px;
         backdrop-filter: none;
+        margin-bottom: 20px;
+    }
+
+    .contact-body{
+      height: 90vh;
+      padding-bottom: 10px;
+    }
+
+    .contact-heading{
+      margin-top: none;
+    }
+  }
+  @media only screen and (max-width: 399px) and (max-height: 699px){
+    .contact-body{
+      height: 125vh;
+      padding-bottom: 10px;
     }
   }
 
+
+
   .contact-heading{
-    margin-top: auto;
+    margin-top: 10%;
     margin-right: auto;
     margin-left: auto;
     color: white;
@@ -394,6 +412,25 @@ body {
     border-radius: 24px;
     font-size: 16px;
     z-index: 1;
+  }
+
+  @media only screen and (max-width: 820px) and (max-height: 1180px){
+    .contact-heading{
+      margin-top: auto;
+    }
+  }
+
+  @media only screen and (max-width: 430px) and (max-height: 947px){
+    .contact-heading{
+      margin-top: 10%;
+    }
+  }
+
+
+  @media only screen and (max-width: 768px) and (max-height: 1024px){
+    #team-members{
+      backdrop-filter: none;
+    }
   }
   .team-member:hover {
     cursor: grab;
