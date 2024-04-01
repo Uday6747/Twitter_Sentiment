@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+
+  <title>MyResume Bootstrap Template - Index</title>
+  <meta content="" name="description">
+  <meta content="" name="keywords">
+
+  <!-- Favicons -->
+  <link href="assets/img/bkpic.png" rel="icon">
+  <link href="assets/img/apple-touch-icon.png" rel="apple-touch-icon">
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Raleway:300,300i,400,400i,500,500i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i" rel="stylesheet">
+
+  <!-- Vendor CSS Files -->
+  <link href="/static/vendor/aos/aos.css" rel="stylesheet">
+  <link href="/static/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/static/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+  <link href="/static/vendor/boxicons/css/boxicons.min.css" rel="stylesheet">
+  <link href="/static/vendor/glightbox/css/glightbox.min.css" rel="stylesheet">
+  <link href="/static/vendor/swiper/swiper-bundle.min.css" rel="stylesheet">
+  <!-- Template Main CSS File -->
+  <link href="/static/search-style.css" rel="stylesheet">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="/static/js/script.js" defer></script>
+  <script src="/static/js/search.js" defer></script>
+</head>
+
+<body>
+  <!-- ======= Header ======= -->
+  
+  <div class="na" >
+  <header id="header" class="fixed-top d-flex header-transparent">
+
+    <nav id="navbar" class="navbar">
+      <ul>
+        <li><a class="nav-link scrollto active" href="/">Home</a></li>
+        <li><a class="nav-link scrollto" href="/">Accuracy</a></li>
+        <li><a class="nav-link scrollto" href="#resume">Data Info</a></li>
+        <li><a class="nav-link scrollto " href="#portfolio">Report</a></li>
+        <li><a class="nav-link scrollto" href="#contact">Contact</a></li>
+      </ul>
+      <i class="bi bi-list mobile-nav-toggle"></i>
+    </nav><!-- .navbar -->
+  </header>
+  </div>
+  <div class="navigation">
+    <a href="/">Home</a> > <a href="/search">Twitter Tag Analysis</a>
+  </div>
+  <div class="he">
+    <p class="note">Twitter Tag Analysis (Tweets Analysis)</p>
+    <p class="sub-note">Enter a tag to search for the tag related tweets and those are saved in a .csv file. Which can be analysed further.</p>
+    <p class="sub-note">After the search word is inputed automatically the tags are extracted and saved into a .csv file.</p>
+    <p class="note1">Accuracy of the Model used is {{'%.2f'|format(acc)}}% ({{bmn}}).</p>
+  </div>
+  <div class="search-body">
+  <div class="search">
+    <svg xmlns="http://www.w3.org/2000/svg" width="355.5" height="87.99">
+        <path class="right" fill="none" stroke="#08c1ff" stroke-width="4" stroke-miterlimit="10" d="M177.75 85.99h133.5c23.334 0 42.25-18.916 42.25-42.25C352.944 20.528 333.967 2 310.748 2H177.75"/>
+        <path class="left" fill="none" stroke="#08c1ff" stroke-width="4" stroke-miterlimit="10" d="M177.75 85.99H44.25C20.916 85.99 2 67.074 2 43.74 2.556 20.528 21.533 2 44.752 2H177.75"/>
+    </svg>
+
+    <p></p>
+    <input id="searchInput" type="text" />
+    <span id="searchBtn">Search</span>
+    </div>
+  </div>
+
+  <!-- Loading Animation -->
+  <div class="loading-body" style="display: none;">
+  <div id="loading-container" >
+    <div class="divider" aria-hidden="true"></div>
+    <p class="loading-text" aria-label="Loading">
+      <span class="letter" aria-hidden="true">L</span>
+      <span class="letter" aria-hidden="true">o</span>
+      <span class="letter" aria-hidden="true">a</span>
+      <span class="letter" aria-hidden="true">d</span>
+      <span class="letter" aria-hidden="true">i</span>
+      <span class="letter" aria-hidden="true">n</span>
+      <span class="letter" aria-hidden="true">g</span>
+    </p>
+  </div>
+  </div>
+  
+    <!-- Search Results Container -->
+    <div id="search-results-container">
+        <!-- Your search results HTML content here -->
+    </div>
+    <script>
+        // Function to perform search
+        function performSearch() {
+          // Hide search body and show loading body
+          $('.search-body').hide();
+          $('.loading-body').show();
+    
+          // Simulate search process (delay for demonstration)
+          setTimeout(function() {
+            // Hide loading animation and show search results
+            $('.loading-body').hide();
+            $('#search-results-container').show();
+    
+            // Here you can populate the search results dynamically
+            // Example: populateSearchResults();
+          }, 8000); // 8 seconds delay (adjust as needed)
+        }
+    
+        // Event listener for search button click
+        $('#searchBtn').click(function() {
+          performSearch();
+        });
+    
+        // Event listener for Enter key press in search input
+        $('#searchInput').keydown(function(event) {
+          if (event.key === 'Enter') {
+            performSearch();
+          }
+        });
+    </script>
+
+  <div id="preloader"></div>
+  <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
+
+  <!-- Template Main JS File -->
+  <script src="/static/js/main.js"></script>
+  <!-- Site footer -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="row">
+        <div class="col-sm-12 col-md-6">
+          <h6>About</h6>
+          <p class="text-justify">Scanfcode.com <i>CODE WANTS TO BE SIMPLE </i> is an initiative  to help the upcoming programmers with the code. Scanfcode focuses on providing the most efficient code or snippets as the code wants to be simple. We will help programmers build up concepts in different programming languages that include C, C++, Java, HTML, CSS, Bootstrap, JavaScript, PHP, Android, SQL and Algorithm.</p>
+        </div>
+
+        <div class="col-xs-6 col-md-3">
+          <h6>Project keywords</h6>
+          <ul class="footer-links">
+            <li>Sentiment Analysis</li>
+            <li>Unstructured Data</li>
+            <li>Python</li>
+            <li>Flask</li>
+            <li>Scikit-Learn</li>
+            <li>Matlplotlin (Result Graph)</li>
+          </ul>
+        </div>
+
+        <div class="col-xs-6 col-md-3">
+          <h6>Quick Links</h6>
+          <ul class="footer-links">
+            <li><a href="">Home</a></li>
+            <li><a href="">Accuracy</a></li>
+            <li><a href="">Data Info</a></li>
+            <li><a href="">Report</a></li>
+            <li><a href="">Contact</a></li>
+          </ul>
+        </div>
+      </div>
+      <hr>
+    </div>
+    <div class="container">
+      <div class="row">
+        <div class="col-md-8 col-sm-6 col-xs-12">
+          <p class="copyright-text">Copyright &copy; 2024 All Rights Reserved by 
+       <a href="#">IV CSD Project Team 2</a>.
+          </p>
+        </div>
+
+        <div class="col-md-4 col-sm-6 col-xs-12">
+        </div>
+      </div>
+    </div>
+</footer>
+  
+</body>
+
+</html>

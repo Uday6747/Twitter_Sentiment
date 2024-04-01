@@ -20,7 +20,8 @@ import pickle
 
 app= Flask(__name__)
 
-global file_name
+global file_name, status
+status = 0
 accuracies = []
 accur = {}
 # Importing the dataset :
@@ -237,7 +238,10 @@ def single():
 
 @app.route('/file')
 def file():
-    return render_template('file.html', acc=best_model_train_accuracy*100, bmn=best_model_name)
+    global status
+    status = 0
+    print(status)
+    return render_template('file.html',acc=best_model_train_accuracy*100, bmn=best_model_name)
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
@@ -259,15 +263,32 @@ def upload_file():
     
     return 'File uploaded successfully'
 
+@app.route('/search')
+def search():
+    global status
+    status = 1
+    print(status)
+    return render_template('search.html', acc=best_model_train_accuracy*100, bmn=best_model_name)
+
 @app.route('/file_result')
 def file_result():
+    global status
+    print("status :",status)
     filename = 'best_train_model.pkl'
     model = pickle.load(open(filename, 'rb'))
     DATASET_COLUMNS_test=['text']
     DATASET_ENCODING = "ISO-8859-1"
     df_test = pd.read_csv(file_name,
                     encoding=DATASET_ENCODING)
-    df_test.columns = DATASET_COLUMNS_test
+    if len(df_test.columns) > 1:
+       print(df_test.info())
+       df_test = df_test[['text']]  # Extracting 'text' column as DataFrame
+       df_test.columns = ['text']  # Renaming the column to 'text'
+       # Now df_re is a DataFrame with one column named 'text'
+       print(df_test.info())
+       print(df_test)
+    else:
+        df_test.columns = DATASET_COLUMNS_test
     # Display of the first 5 lines :
     total_comment_len = len(df_test)
     print(df_test.sample(5))
@@ -301,21 +322,17 @@ def file_result():
     positive_per = (positive_len/total_comment_len)*100
     negative_per = (negative_len/total_comment_len)*100
     neutral_per = (neutral_len/total_comment_len)*100
-    print("Positive Comments Percentage : ",positive_per)
-    print("Negative Comments Percentage : ",negative_per)
-    print("Neutral Comments Percentage : ",neutral_per)
-    return render_template('result.html', positive_comments=positive_comments, negative_comments=negative_comments, neutral_comments=neutral_comments, acc=best_model_train_accuracy*100, bmn=best_model_name)
+    positive_per = round((positive_len/total_comment_len)*100, 2)
+    negative_per = round((negative_len/total_comment_len)*100, 2)
+    neutral_per = round((neutral_len/total_comment_len)*100, 2)
+    return render_template('result.html',file_name=file_name, status=status, positive_len=positive_len, negative_len=negative_len, neutral_len=neutral_len,positive_per=positive_per, negative_per=negative_per, neutral_per=neutral_per, positive_comments=positive_comments, negative_comments=negative_comments, neutral_comments=neutral_comments, acc=best_model_train_accuracy*100, bmn=best_model_name, tcl=total_comment_len)
 
-'''
-@app.route('')
-def accuracy():
-    return render_template('tag.html')
-'''
-'''
-@app.route('')
-def accuracy():
-    return render_template('accuracy.html')
 
+
+@app.route('/contact')
+def accuracy():
+    return render_template('contact.html')
+'''
 @app.route('')
 def accuracy():
     return render_template('data_info.html')

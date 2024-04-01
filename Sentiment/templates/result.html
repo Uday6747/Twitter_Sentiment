@@ -13,6 +13,9 @@
   <link href="assets/img/bkpic." rel="icon">
   <link href="assets/img/apple-touch-icon.png" rel="apple-touch-icon">
 
+  <!-- Include Chart.js CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/chart.js@2/dist/Chart.min.css" rel="stylesheet">
+
   <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Raleway:300,300i,400,400i,500,500i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i" rel="stylesheet">
 
@@ -27,10 +30,18 @@
   <link href="/static/stylefileresult.css" rel="stylesheet">
   <script src="/static/js/script.js" defer></script>
   <script src="/static/js/upload.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@2"></script>
+  <!-- Vue Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/vue-chartjs@3"></script>
+  <script src="/static/js/script.js" defer></script>
+  <script src="/static/js/upload.js" defer></script>
 </head>
 
 <body>
   <!-- ======= Header ======= -->
+  <!-- Include Chart.js library -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@2/dist/Chart.min.js"></script>
   
   <div class="na" >
   <header id="header" class="fixed-top d-flex header-transparent">
@@ -48,17 +59,75 @@
   </header>
   </div>
   <div class="navigation">
-    <a href="/">Home</a> > <a href="/file">File Sentiment Analysis</a> > <a href="/file_result">Result</a>
+    {% if status == 0 %}
+      <a href="/">Home</a> > <a href="/file">File Sentiment Analysis</a> > <a href="/file_result">Result</a>
+    {% elif status == 1 %}
+      <a href="/">Home</a> > <a href="/search">Twitter Tag Analysis</a> > <a href="/file_result">Result</a>
+    {% endif %}
+    <div class="he">
+      {% if status == 0 %}
+        <p class="note">File Sentiment Analysis Result</p>
+        <p class="sub-note">Result is given as Graph and the comments are separated by the sentiment after analysis of the uploaded file.</p>
+        <p class="note1">Accuracy of the Model used is {{'%.2f'|format(acc)}}% ({{bmn}}).</p>
+        <p class="note1">Uploaded File Name : {{file_name}}</p>
+      {% elif status == 1 %}
+        <p class="note">Twitter Tag Analysis (Tweets Analysis) Result</p>
+        <p class="sub-note">Enter a tag to search for the tag related tweets and those are saved in a .csv file. Which can be analyzed further.</p>
+        <p class="sub-note">After the search word is inputted automatically the tags are extracted and saved into a .csv file.</p>
+        <p class="note1">Accuracy of the Model used is {{'%.2f'|format(acc)}}% ({{bmn}}).</p>
+        <p class="note1">Uploaded File Name : {{file_name}}</p>
+      {% endif %}
+    </div>
+  <div class="graph-menu">
+  <div class="tabs tabs1">
+    <input type="radio" id="htmlTwo" name="fav_language_two" value="HTMLTwo" checked>
+    <label for="htmlTwo">Pie Graph</label>
+    <input type="radio" id="cssTwo" name="fav_language_two" value="CSSTwo">
+    <label for="cssTwo">Bar Graph</label>
   </div>
-  <div class="he">
-    <p class="note">File Sentiment Analysis Result</p>
-    <p class="sub-note">Result is given as Graph and the comments are seperated by the sentiment after analysis of the uploaded file.</p>
-    <p class="note1">Accuracy of the Model used is {{'%.2f'|format(acc)}}% ({{bmn}}).</p>
   </div>
+  <!-- Chart Containers -->
+  <div id="pieChart" class="chart-container">
+    <div class="pie-ch"><canvas id="myPieChart"  width="400" height="400"></canvas></div>
+  </div>
+  
+
+  <div id="barChart" class="chart-container" style="display: none;">
+      <canvas id="myBarChart"></canvas>
+  </div>
+  <div class="value-table">
+    <table class="chart-table">
+      <thead>
+        <tr>
+          <th>Sentiment Label</th>
+          <th>No. of Comments (out of {{tcl}})</th>
+          <th>Percentage %</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr style="background-color: rgba(0, 255, 0, 0.2);">
+          <td>Positive Label</td>
+          <td>{{ positive_len }}</td>
+          <td>{{ positive_per }}%</td>
+        </tr>
+        <tr style="background-color: rgba(255, 99, 132, 0.2);">
+          <td>Negative Label</td>
+          <td>{{ negative_len }}</td>
+          <td>{{ negative_per }}%</td>
+        </tr>
+        <tr style="background-color: rgba(255, 206, 86, 0.2);">
+          <td>Neutral Label</td>
+          <td>{{ neutral_len }}</td>
+          <td>{{ neutral_per }}%</td>
+        </tr>
+      </tbody>
+    </table>
+    </div>
   <div class="comments">
     <!-- Display Positive Comments -->
     <h3 class="Label" style="color: green;">Positive Comments</h3>
-    <h5>Total Number of comments : {{(positive_len)}}</h6>
+    <h5 class="label-sub">Total Number of Positive comments : {{positive_len}} out of {{tcl}}</h5>
+    <h5 class="label-sub">Positive Comments Percentage : {{positive_per}}%</h5>
     <div class="result_cont posti_color">
     {% for comment in positive_comments %}
         <p class="label_result">{{ comment }}</p>
@@ -67,6 +136,8 @@
 
     <!-- Display Negative Comments -->
     <h3 class="Label" style="color: rgb(255, 66, 66);">Negative Comments</h3>
+    <h5 class="label-sub">Total Number of Negative comments : {{negative_len}} out of {{tcl}}</h5>
+    <h5 class="label-sub">Negative Comments Percentage : {{negative_per}}%</h5>
     <div class="result_cont nega_color">
     {% for comment in negative_comments %}
         <p class="label_result">{{ comment }}</p>
@@ -75,6 +146,8 @@
 
     <!-- Display Neutral Comments -->
     <h3 class="Label" style="color: rgb(180, 180, 0);">Neutral Comments</h3>
+    <h5 class="label-sub">Total Number of Neutral comments : {{neutral_len}} out of {{tcl}}</h5>
+    <h5 class="label-sub">Neutral Comments Percentage : {{neutral_per}}%</h5>
     <div class="result_cont neu_color">
     {% for comment in neutral_comments %}
         <p class="label_result">{{ comment }}</p>
@@ -133,7 +206,127 @@
       </div>
     </div>
 </footer>
-  
+<!-- Script Section -->
+<!-- Script Section -->
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const pieChart = document.getElementById('pieChart');
+    const barChart = document.getElementById('barChart');
+    const pieRadioButton = document.getElementById('htmlTwo');
+    const barRadioButton = document.getElementById('cssTwo');
+
+    pieRadioButton.addEventListener('change', function () {
+      if (this.checked) {
+        pieChart.style.display = 'block';
+        barChart.style.display = 'none';
+        // Call function to display or update Pie Chart
+        displayPieChart();
+      }
+    });
+
+    barRadioButton.addEventListener('change', function () {
+      if (this.checked) {
+        pieChart.style.display = 'none';
+        barChart.style.display = 'block';
+        // Call function to display or update Bar Chart
+        displayBarChart();
+      }
+    });
+
+    // Function to display or update Pie Chart
+    function displayPieChart() {
+      const ctx = document.getElementById('myPieChart').getContext('2d');
+      const myPieChart = new Chart(ctx, {
+        type: 'pie',
+        data: {
+          labels: ['Positive', 'Negative', 'Neutral'],
+          datasets: [{
+            label: 'Sentiment Distribution (Positive: {{ positive_per }}%, Negative: {{ negative_per }}%, Neutral: {{ neutral_per }}%)',
+            data: [
+              {{ positive_per }},
+              {{ negative_per }},
+              {{ neutral_per }}
+            ],
+            backgroundColor: [
+              'rgba(0, 255, 0, 0.2)',
+              'rgba(255, 99, 132, 0.2)',
+              'rgba(255, 206, 86, 0.2)'
+            ],
+            borderColor: [
+              'rgba(0, 255, 0, 1)',
+              'rgba(255, 99, 132, 1)',
+              'rgba(255, 206, 86, 1)'
+            ],
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            datalabels: {
+              color: '#666',
+              formatter: (value, ctx) => {
+                let sum = 0;
+                let dataArr = ctx.chart.data.datasets[0].data;
+                dataArr.map(data => {
+                  sum += data;
+                });
+                let percentage = (value * 100 / sum).toFixed(2) + "%";
+                return percentage;
+              }
+            }
+          }
+        }
+      });
+      myPieChart.options.plugins.legend.display = true;
+    }
+
+    // Function to display or update Bar Chart
+    function displayBarChart() {
+      const ctx = document.getElementById('myBarChart').getContext('2d');
+      const myBarChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ['Positive', 'Negative', 'Neutral'],
+          datasets: [{
+            label: 'Sentiment Distribution',
+            data: [
+              {{ positive_per }},
+              {{ negative_per }},
+              {{ neutral_per }}
+            ],
+            backgroundColor: [
+              'rgba(0, 255, 0, 0.2)',
+              'rgba(255, 99, 132, 0.2)',
+              'rgba(255, 206, 86, 0.2)'
+            ],
+            borderColor: [
+              'rgba(0, 255, 0, 1)',
+              'rgba(255, 99, 132, 1)',
+              'rgba(255, 206, 86, 1)'
+            ],
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            yAxes: [{
+              ticks: {
+                beginAtZero: true
+              }
+            }]
+          }
+        }
+      });
+      myBarChart.options.plugins.legend.display = false;
+    }
+    // Initially, display the Pie Chart
+    displayPieChart();
+  });
+</script>
 </body>
 
 </html>
